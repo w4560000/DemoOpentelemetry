@@ -1,5 +1,8 @@
 # Opentelemetry With Jeager In .Net Core
-程式碼改寫至 https://github.com/niteshsinghal85/blogs/tree/main/DemoOpentelemetry，新增串接 MSSQL、Redis、API2 做測試
+程式碼改寫至 https://github.com/niteshsinghal85/blogs/tree/main/DemoOpentelemetry
+參考文章 https://medium.com/@niteshsinghal85/opentelemetry-with-jaeger-in-net-core-9b1e009a73dc
+
+新增串接 MSSQL、Redis、API2 做測試
 
 |  服務			| Port號				|
 |  ----			| ----				|
