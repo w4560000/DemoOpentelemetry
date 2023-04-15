@@ -3,8 +3,7 @@ using OpenTelemetry.Resources;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenTelemetryTracing(b => {
-    b.SetResourceBuilder(
-        ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
+    b.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
 	 .AddAspNetCoreInstrumentation()
      .AddHttpClientInstrumentation(options =>
      {

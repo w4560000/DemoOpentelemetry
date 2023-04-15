@@ -1,18 +1,15 @@
 using DemoOpentelemetry.API;
-using OpenTelemetry;
+using Microsoft.Data.SqlClient;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using StackExchange.Redis;
-using Microsoft.Data.SqlClient;
-using OpenTelemetry.Exporter;
-using Microsoft.Extensions.Options;
+using System.Data.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped(_ =>
     new SqlConnection("DBConnection")
 );
-
 
 // Add services to the container.
 var connectionMultiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptions()
@@ -25,7 +22,6 @@ builder.Services.AddSingleton<RedisUtility>();
 
 builder.Services.AddOpenTelemetryTracing(b =>
 {
-
     b.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
      .AddAspNetCoreInstrumentation()
     .AddHttpClientInstrumentation(options =>
@@ -45,7 +41,6 @@ builder.Services.AddOpenTelemetryTracing(b =>
 
             if (eventName.Equals("OnStopActivity"))
             {
-
                 if (rawObject is HttpResponseMessage httpResponse)
                 {
                     var response = "empty";
@@ -54,7 +49,6 @@ builder.Services.AddOpenTelemetryTracing(b =>
                     activity.SetTag("http.response_content", response);
                 }
             }
-
         };
     })
      .AddRedisInstrumentation(connectionMultiplexer, o => o.SetVerboseDatabaseStatements = true)
@@ -64,12 +58,17 @@ builder.Services.AddOpenTelemetryTracing(b =>
          options.SetDbStatementForStoredProcedure = true;
          options.SetDbStatementForText = true;
          options.RecordException = true;
-         options.Enrich = (activity, x, y) => activity.SetTag("db.type", "sql");
+         options.Enrich = (activity, connection, command) =>
+         {
+             if (command is DbCommand dbCommand)
+             {
+                 var parameters = dbCommand.Parameters;
+                 foreach (SqlParameter parameter in parameters)
+                     activity.SetTag($"sql.parameter.{parameter.ParameterName}", parameter.Value?.ToString());
+             }
+         };
      })
-     .AddOtlpExporter(otlpOptions => 
-     {
-         otlpOptions.Endpoint = new Uri("http://localhost:4317"); 
-     });
+     .AddOtlpExporter(opts => { opts.Endpoint = new Uri("http://localhost:4317"); });
 });
 
 builder.Services.AddControllers();

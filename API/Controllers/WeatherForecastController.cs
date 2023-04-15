@@ -30,8 +30,8 @@ namespace DemoOpentelemetry.Controllers
 		{
             var b = "";
 
-            string a = _sqlConnection.Query<string>("SELECT GETDATE()").FirstOrDefault();
-            _sqlConnection.Query<string>("XXSP", new { Platform = "gallery" }, commandType: CommandType.StoredProcedure).ToList();
+            string a = _sqlConnection.Query<string>("SELECT GETDATE(), @TestParam 'TestParam'", new { TestParam = "qqqq123" }).FirstOrDefault();
+            _sqlConnection.Query<string>("dbo.SP_Sample", new { QueryParam = "123" }, commandType: CommandType.StoredProcedure).ToList();
 
             var data = agGameGcpRedisUtility.cacheDB.StringGet("XXKey");
 
